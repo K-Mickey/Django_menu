@@ -2,14 +2,13 @@ from django import template
 from django.http import HttpRequest
 from django.template import RequestContext
 from django.urls import reverse, NoReverseMatch
-from django.views.decorators.cache import cache_page
+from django.core.cache import cache
 from ..models import Menu
 import re
 
 register = template.Library()
 
 
-@cache_page(60)
 @register.inclusion_tag('server/menu.html', takes_context=True)
 def draw_menu(context: RequestContext, name: str = '', parent: int = 0):
     if parent != 0 and 'menu' in context:
@@ -22,7 +21,11 @@ def draw_menu(context: RequestContext, name: str = '', parent: int = 0):
             if 'request' in context and isinstance(context['request'], HttpRequest) \
             else ''
 
-        data = Menu.objects.select_related().filter(category__name=name).order_by('pk')
+        data = cache.get('data')
+        if not data:
+            data = Menu.objects.select_related().filter(category__name=name).order_by('pk')
+            cache.set('data', data, 120)
+
         menu = []
 
         for item in data:

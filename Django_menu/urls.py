@@ -29,3 +29,10 @@ app = 'server'
 mod = app + '.urls'
 if find_spec(mod):
     urlpatterns.append(path(app + '/', include(mod)))
+
+if settings.DEBUG:
+    import debug_toolbar
+
+    urlpatterns = [
+        path('__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns
