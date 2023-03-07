@@ -2,12 +2,14 @@ from django import template
 from django.http import HttpRequest
 from django.template import RequestContext
 from django.urls import reverse, NoReverseMatch
+from django.views.decorators.cache import cache_page
 from ..models import Menu
 import re
 
 register = template.Library()
 
 
+@cache_page(60)
 @register.inclusion_tag('server/menu.html', takes_context=True)
 def draw_menu(context: RequestContext, name: str = '', parent: int = 0):
     if parent != 0 and 'menu' in context:
